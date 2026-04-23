@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_test
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: streaming_db
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  api:
+    build: .
+    container_name: fastapi_app
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+
+  flask:
+    build:
+      context: ./flask_app
+      dockerfile: Dockerfile
+    container_name: flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FASTAPI_URL=http://api:8000/api/v1
+    depends_on:
+      - mysql
+      - api
+
+volumes:
+  mysql_data:
