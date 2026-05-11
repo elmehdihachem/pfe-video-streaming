@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle vidéo — Étape 2</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ✅ FOND BLANC */
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* ✅ CONTAINER BLANC */
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .steps { display: flex; gap: 8px; margin-bottom: 30px; }
+
+        .step {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #e9ecef;
+        }
+        .step.active { background: #5c4fcf; }
+
+        h2 { margin-bottom: 24px; font-size: 20px; color: #1a1a1a; }
+
+        .drop-zone {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 50px 30px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+        .drop-zone.dragover {
+            border-color: #5c4fcf;
+            background: #f5f3ff;
+        }
+        .drop-zone input { display: none; }
+        .drop-zone.has-file { border-color: #5c4fcf; }
+
+        .btn-upload {
+            width: 100%;
+            padding: 14px;
+            background: #5c4fcf;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-upload:disabled {
+            background: #e9ecef;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* ✅ Progress bar light */
+        .progress-wrap {
+            display: none;
+            margin-bottom: 20px;
+        }
+        .progress-bar-bg {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #5c4fcf;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* ✅ Success light */
+        .success-box {
+            display: none;
+            background: #d4edda;
+            border: 1px solid #a3cfbb;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .success-box h3 { color: #155724; margin-bottom: 8px; }
+        .success-box p { color: #555; font-size: 13px; }
+
+        /* ✅ Status light */
+        .status-box {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-badge.PENDING   { background: #fff3cd; color: #856404; }
+        .status-badge.ENCODING  { background: #cfe2ff; color: #084298; }
+        .status-badge.UPLOADING { background: #d1ecf1; color: #0c5460; }
+        .status-badge.DONE      { background: #d4edda; color: #155724; }
+        .status-badge.ERROR     { background: #f8d7da; color: #721c24; }
+
+        .btn-watch {
+            display: none;
+            width: 100%;
+            padding: 14px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .back {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 13px;
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+        }
+        .back:hover { color: #5c4fcf; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="steps">
+        <div class="step"></div>
+        <div class="step active"></div>
+    </div>
+
+    <h2>🎬 Upload de la vidéo</h2>
+    <p style="color:#666;font-size:13px;margin-bottom:20px">
+        Titre : <strong style="color:#333">{{ titre }}</strong>
+    </p>
+
+    <div class="drop-zone" id="drop-zone"
+         onclick="document.getElementById('video-input').click()"
+         ondragover="dragOver(event)" ondragleave="dragLeave(event)"
+         ondrop="dropFile(event)">
+        <input type="file" id="video-input" accept="video/*" onchange="fileSelected(this)">
+        <div id="drop-placeholder">
+            <p style="font-size:40px">📁</p>
+            <p style="color:#666;margin-top:10px">Glisser-déposer votre vidéo ici</p>
+            <p style="color:#aaa;font-size:12px;margin-top:6px">ou cliquer pour choisir</p>
+        </div>
+        <div id="file-info" style="display:none">
+            <p style="font-size:30px">🎥</p>
+            <p id="file-name" style="color:#333;margin-top:8px"></p>
+            <p id="file-size" style="color:#888;font-size:12px;margin-top:4px"></p>
+        </div>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text">
+            <span>Upload en cours...</span>
+            <span id="progress-pct">0%</span>
+        </div>
+    </div>
+
+    <div class="success-box" id="success-box">
+        <h3>✅ Upload terminé !</h3>
+        <p>Votre vidéo est en cours de conversion. Cela peut prendre quelques minutes.</p>
+    </div>
+
+    <div class="status-box" id="status-box">
+        <div class="status-label">Statut de la conversion</div>
+        <span class="status-badge PENDING" id="status-badge">PENDING</span>
+    </div>
+
+    <button class="btn-upload" id="btn-upload" disabled onclick="startUpload()">
+        Uploader la vidéo
+    </button>
+
+    <a class="btn-watch" id="btn-watch" href="#">▶ Regarder la vidéo</a>
+
+    <a href="/" class="back">← Retour à la liste</a>
+</div>
+<script>
+    let selectedFile = null
+    let courseId     = null
+
+    // ── Sélection fichier ──
+    function fileSelected(input) {
+        if (input.files && input.files[0]) {
+            setFile(input.files[0])
+        }
+    }
+
+    function setFile(file) {
+        selectedFile = file
+        document.getElementById("drop-placeholder").style.display = "none"
+        document.getElementById("file-info").style.display = "block"
+        document.getElementById("file-name").textContent = file.name
+        document.getElementById("file-size").textContent =
+            (file.size / 1024 / 1024).toFixed(2) + " MB"
+        document.getElementById("drop-zone").classList.add("has-file")
+        document.getElementById("btn-upload").disabled = false
+    }
+
+    // ── Drag & Drop ──
+    function dragOver(e) {
+        e.preventDefault()
+        document.getElementById("drop-zone").classList.add("dragover")
+    }
+    function dragLeave(e) {
+        document.getElementById("drop-zone").classList.remove("dragover")
+    }
+    function dropFile(e) {
+        e.preventDefault()
+        dragLeave(e)
+        const file = e.dataTransfer.files[0]
+        if (file && file.type.startsWith("video/")) setFile(file)
+    }
+
+    // ── Upload avec progression ──
+    function startUpload() {
+        if (!selectedFile) return
+
+        const formData = new FormData()
+        formData.append("video", selectedFile)
+        formData.append("titre", "{{ titre }}")
+        formData.append("thumbnail_url", "{{ thumbnail_url or '' }}")
+
+        document.getElementById("btn-upload").disabled = true
+        document.getElementById("drop-zone").style.pointerEvents = "none"
+        document.getElementById("progress-wrap").style.display = "block"
+
+        const xhr = new XMLHttpRequest()
+
+        // ── Mise à jour de la barre de progression ──
+        xhr.upload.addEventListener("progress", e => {
+            if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 100)
+                document.getElementById("progress-fill").style.width = pct + "%"
+                document.getElementById("progress-pct").textContent  = pct + "%"
+            }
+        })
+
+        // ── Upload terminé ──
+        xhr.addEventListener("load", () => {
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText)
+                courseId   = data.course_id
+
+                document.getElementById("progress-wrap").style.display = "none"
+                document.getElementById("success-box").style.display   = "block"
+                document.getElementById("status-box").style.display    = "block"
+
+                // Poll statut toutes les 4s
+                pollStatus(courseId)
+            }
+        })
+
+        xhr.open("POST", "/api/upload/video")
+        xhr.send(formData)
+    }
+
+    // ── Poll statut — s'arrête dès que DONE ou ERROR ──
+function pollStatus(id) {
+    async function checkStatus() {
+        try {
+            const res  = await fetch("/status/" + id)
+            if (!res.ok) {
+                setTimeout(checkStatus, 10000)
+                return
+            }
+
+            const data  = await res.json()
+            const badge = document.getElementById("status-badge")
+
+            badge.textContent = data.status
+            badge.className   = "status-badge " + data.status
+
+            if (data.status === "DONE") {
+                // ✅ Terminé — affiche le bouton regarder
+                const btnWatch = document.getElementById("btn-watch")
+                btnWatch.href         = "/watch/" + id
+                btnWatch.style.display = "block"
+                return  // ✅ stop — plus de vérification
+            }
+
+            if (data.status === "ERROR") {
+                return  // ✅ stop
+            }
+
+            // ✅ Pas encore terminé — vérifie dans 10s
+            setTimeout(checkStatus, 10000)
+
+        } catch (e) {
+            // ✅ Erreur réseau — réessaie dans 10s
+            setTimeout(checkStatus, 10000)
+        }
+    }
+
+    // ✅ Première vérification après 10s
+    setTimeout(checkStatus, 10000)
+
+    }
+</script>
+
+</body>
+</html>

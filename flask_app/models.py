@@ -8,6 +8,7 @@ class Course(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
     titre           = db.Column(db.String(255), nullable=False)
+    thumbnail_url   = db.Column(db.String(500), nullable=True)
     playlist_720p   = db.Column(db.String(500), nullable=True)
     playlist_1080p  = db.Column(db.String(500), nullable=True)
     status          = db.Column(db.String(50), default="PENDING")

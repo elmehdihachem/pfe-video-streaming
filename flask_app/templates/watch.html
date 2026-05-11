@@ -6,37 +6,96 @@
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.12/dist/hls.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #111; color: white; padding: 30px; }
-        h1 { margin-bottom: 20px; }
-        video { width: 100%; max-width: 900px; border-radius: 10px; }
 
-        .quality-btns { margin: 16px 0; display: flex; gap: 10px; }
+        /* ✅ FOND BLANC */
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            padding: 30px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        video {
+            width: 100%;
+            max-width: 900px;
+            border-radius: 10px;
+            background: black;
+        }
+
+        .quality-btns {
+            margin: 16px 0;
+            display: flex;
+            gap: 10px;
+        }
+
         .quality-btns button {
-            padding: 8px 20px; border-radius: 6px;
-            border: 2px solid #5c4fcf; background: transparent;
-            color: white; cursor: pointer; font-size: 14px;
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: 2px solid #5c4fcf;
+            background: white;
+            color: #5c4fcf;
+            cursor: pointer;
+            font-size: 14px;
         }
-        .quality-btns button.active { background: #5c4fcf; }
 
-        .links { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
-        .link-box {
-            background: #222; padding: 12px 16px;
-            border-radius: 8px; display: flex;
-            align-items: center; gap: 10px;
+        .quality-btns button.active {
+            background: #5c4fcf;
+            color: white;
         }
+
+        /* ✅ LINKS BOX LIGHT */
+        .links {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .link-box {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
         .link-box input {
-            background: transparent; border: none;
-            color: #aaa; font-size: 12px; width: 400px;
+            background: transparent;
+            border: none;
+            color: #555;
+            font-size: 12px;
+            width: 400px;
             outline: none;
         }
+
         .link-box button {
-            background: #5c4fcf; color: white;
-            border: none; padding: 6px 14px;
-            border-radius: 6px; cursor: pointer;
+            background: #5c4fcf;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
         }
 
-        a.back { color: #aaa; text-decoration: none; display: inline-block; margin-top: 20px; }
-        a.back:hover { color: white; }
+        /* ✅ BACK LINK */
+        a.back {
+            color: #888;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        a.back:hover {
+            color: #5c4fcf;
+        }
+
     </style>
 </head>
 <body>
@@ -70,12 +129,14 @@
         "720p":  "{{ course.playlist_720p }}",
         "1080p": "{{ course.playlist_1080p }}"
     }
+
     const video   = document.getElementById("player")
     let   hls     = null
     let   current = "720p"
 
     function loadQuality(quality) {
         current = quality
+
         document.querySelectorAll(".quality-btns button").forEach(b => {
             b.classList.toggle("active", b.textContent === quality)
         })
@@ -83,7 +144,10 @@
         const url = urls[quality]
         if (!url) return
 
-        if (hls) { hls.destroy(); hls = null }
+        if (hls) {
+            hls.destroy()
+            hls = null
+        }
 
         if (Hls.isSupported()) {
             hls = new Hls()

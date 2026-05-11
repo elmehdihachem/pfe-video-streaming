@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle vidéo — Étape 1</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ✅ Fond blanc au lieu de #0f0f0f */
+        body { font-family: sans-serif; background: #f0f2f5; color: #1a1a1a;
+               display: flex; justify-content: center; align-items: center;
+               min-height: 100vh; }
+
+        /* ✅ Container blanc avec ombre */
+        .container {
+            background: white; padding: 40px; border-radius: 14px;
+            width: 100%; max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .steps { display: flex; gap: 8px; margin-bottom: 30px; }
+
+        /* ✅ Steps gris clair au lieu de #333 */
+        .step { flex: 1; height: 4px; border-radius: 2px; background: #e9ecef; }
+        .step.active { background: #5c4fcf; }
+
+        /* ✅ Titre sombre */
+        h2 { margin-bottom: 24px; font-size: 20px; color: #1a1a1a; }
+
+        /* ✅ Label sombre */
+        label { display: block; margin-bottom: 6px; color: #555; font-size: 13px; font-weight: 500; }
+
+        /* ✅ Input fond blanc */
+        input[type="text"] {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid #ddd; background: #fafafa;
+            color: #1a1a1a; font-size: 15px; margin-bottom: 20px;
+            outline: none; transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: #5c4fcf; background: white; }
+
+        /* ✅ Zone thumbnail fond clair */
+        .thumbnail-zone {
+            border: 2px dashed #ddd; border-radius: 10px;
+            padding: 30px; text-align: center; cursor: pointer;
+            margin-bottom: 20px; transition: border-color 0.2s;
+            background: #fafafa;
+        }
+        .thumbnail-zone:hover { border-color: #5c4fcf; background: #f5f3ff; }
+        .thumbnail-zone input { display: none; }
+        .thumbnail-zone img {
+            max-width: 100%; max-height: 200px;
+            border-radius: 8px; margin-top: 10px;
+        }
+
+        .btn-next {
+            width: 100%; padding: 14px; background: #5c4fcf;
+            color: white; border: none; border-radius: 8px;
+            font-size: 16px; cursor: pointer; font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-next:hover { background: #4a3db0; }
+
+        /* ✅ Lien retour */
+        .back { color: #aaa; text-decoration: none; font-size: 13px;
+                display: block; text-align: center; margin-top: 16px; }
+        .back:hover { color: #5c4fcf; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="steps">
+        <div class="step active"></div>
+        <div class="step"></div>
+    </div>
+
+    <h2>📋 Informations de la vidéo</h2>
+
+    <form action="/upload/info" method="POST" enctype="multipart/form-data" id="form">
+        <label>Titre du cours *</label>
+        <input type="text" name="titre" placeholder="Ex: Introduction au Python" required>
+
+        <label>Thumbnail <span style="color:#aaa;font-weight:400">(optionnel — 800×600, max 150Ko)</span></label>
+        <div class="thumbnail-zone" onclick="document.getElementById('thumb-input').click()">
+            <input type="file" name="thumbnail" id="thumb-input"
+                   accept="image/*" onchange="previewThumb(this)">
+            <div id="thumb-placeholder">
+                <!-- ✅ Couleurs adaptées au fond blanc -->
+                <p style="font-size:30px">🖼️</p>
+                <p style="color:#aaa;font-size:13px;margin-top:8px">
+                    Cliquer pour choisir une image
+                </p>
+                <p style="color:#ccc;font-size:11px;margin-top:4px">
+                    ou laissez vide pour une génération automatique
+                </p>
+            </div>
+            <img id="thumb-preview" style="display:none">
+        </div>
+
+        <button type="submit" class="btn-next">Suivant →</button>
+    </form>
+
+    <a href="/" class="back">← Retour à la liste</a>
+</div>
+
+<script>
+    function previewThumb(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader()
+            reader.onload = e => {
+                document.getElementById("thumb-preview").src = e.target.result
+                document.getElementById("thumb-preview").style.display = "block"
+                document.getElementById("thumb-placeholder").style.display = "none"
+            }
+            reader.readAsDataURL(input.files[0])
+        }
+    }
+</script>
+</body>
+</html>
