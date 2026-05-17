@@ -10,3 +10,4 @@ python-dotenv
 pydantic
 httpx
 Pillow
+redis

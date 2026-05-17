@@ -1,58 +1,74 @@
 import os
-from services.r2 import get_r2_client
-from PIL import Image
-import io
 import uuid
 import shutil
+import io
+
+from PIL import Image
 from fastapi import APIRouter, UploadFile, File, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from database.db import get_db
 from models.video import Video, VideoStatus
 from services.background import process_video
+from services.r2 import (
+    get_r2_client,
+    generate_presigned_url,
+    delete_encoded_videos
+)
 
 router = APIRouter()
 
 UPLOAD_DIR = "/app/uploads"
 
 
-@router.post("/upload")
-async def upload_video(
-    file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
-    db: Session = Depends(get_db)
-):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    temp_path = os.path.join(UPLOAD_DIR, file.filename)
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+# ─────────────────────────────────────────────────────────────────────────────
 
-    video_folder_name = str(uuid.uuid4())
+#  le navigateur uploade directement sur R2 via presigned URL
+#              FastAPI écoute Redis et traite la vidéo quand elle est prête
+# ─────────────────────────────────────────────────────────────────────────────
 
-    video = Video(nom=file.filename, status=VideoStatus.PENDING)
-    db.add(video)
-    db.commit()
-    db.refresh(video)
 
-    background_tasks.add_task(process_video, video.id, temp_path, video_folder_name)
+# ─────────────────────────────────────────────────────────────────────────────
+# NOUVEAU — Générer une Presigned URL pour upload direct vers R2
+# ─────────────────────────────────────────────────────────────────────────────
 
+# Modèle Pydantic pour valider le body de la requête
+class PresignedUrlRequest(BaseModel):
+    filename:     str
+    content_type: str
+
+
+@router.post("/presigned-url")
+def get_presigned_url(body: PresignedUrlRequest):
+    # Appelle la fonction dans r2.py qui génère l'URL signée
+    result = generate_presigned_url(
+        filename     = body.filename,
+        content_type = body.content_type
+    )
+
+    # Retourne au Flask :
+    #   presigned_url → URL signée pour uploader directement sur R2 (expire 1h)
+    #   r2_key        → chemin dans R2 ex: "raw_uploads/uuid.mp4"
     return {
-        "message": "Upload reçu, encodage en cours en arrière-plan",
-        "video_id": video.id,
-        "video_folder": video_folder_name,
-        "status": video.status
+        "presigned_url": result["presigned_url"],
+        "r2_key":        result["r2_key"]
     }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  — Upload thumbnail
+# ─────────────────────────────────────────────────────────────────────────────
 @router.post("/upload/thumbnail")
 async def upload_thumbnail(file: UploadFile = File(...)):
     contents = await file.read()
-    img = Image.open(io.BytesIO(contents))
+    img      = Image.open(io.BytesIO(contents))
 
     img = img.convert("RGB")
     img = img.resize((800, 600), Image.LANCZOS)
 
-    output = io.BytesIO()
+    # Compression JPEG jusqu'à 150Ko max
+    output  = io.BytesIO()
     quality = 85
     while True:
         output.seek(0)
@@ -64,9 +80,9 @@ async def upload_thumbnail(file: UploadFile = File(...)):
 
     output.seek(0)
     thumbnail_id = str(uuid.uuid4())
-    r2_key   = f"thumbnails/{thumbnail_id}.jpg"
-    bucket   = os.getenv("R2_BUCKET_NAME")
-    base_url = os.getenv("R2_PUBLIC_DOMAIN")
+    r2_key       = f"thumbnails/{thumbnail_id}.jpg"
+    bucket       = os.getenv("R2_BUCKET_NAME")
+    base_url     = os.getenv("R2_PUBLIC_DOMAIN")
 
     get_r2_client().upload_fileobj(
         output, bucket, r2_key,
@@ -77,6 +93,9 @@ async def upload_thumbnail(file: UploadFile = File(...)):
     return {"thumbnail_url": thumbnail_url}
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  — Récupérer le statut d'une vidéo
+# ─────────────────────────────────────────────────────────────────────────────
 @router.get("/video/{video_id}")
 def get_video(video_id: int, db: Session = Depends(get_db)):
     video = db.query(Video).filter(Video.id == video_id).first()
@@ -94,36 +113,21 @@ def get_video(video_id: int, db: Session = Depends(get_db)):
     }
 
 
-# ✅ Suppression vidéo + fichiers R2
-@router.delete("/video/{video_id}/files")
-def delete_video_files(video_id: int, db: Session = Depends(get_db)):
-    video = db.query(Video).filter(Video.id == video_id).first()
-    if not video:
-        return {"error": "Vidéo non trouvée"}
+# ─────────────────────────────────────────────────────────────────────────────
+#  — Supprimer les fichiers encodés de R2
+# ─────────────────────────────────────────────────────────────────────────────
 
-    try:
-        client = get_r2_client()
-        bucket = os.getenv("R2_BUCKET_NAME")
+# Modèle Pydantic pour valider le body de la requête
+class DeleteFilesRequest(BaseModel):
+    url_720p:  str
+    url_1080p: str
 
-        if video.playlist_url:
-            # ex URL: https://pub.../videos/uuid/720p/video.m3u8
-            parts       = video.playlist_url.split("/")
-            uuid_index  = parts.index("videos") + 1
-            folder_name = parts[uuid_index]
 
-            # Supprime 720p et 1080p
-            for quality in ["720p", "1080p"]:
-                prefix   = f"videos/{folder_name}/{quality}/"
-                response = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
-                for obj in response.get("Contents", []):
-                    client.delete_object(Bucket=bucket, Key=obj["Key"])
-                    print(f"Supprimé R2: {obj['Key']}")
-
-    except Exception as e:
-        print(f"Erreur suppression R2: {e}")
-
-    # Supprime de MySQL
-    db.delete(video)
-    db.commit()
-
-    return {"message": "Vidéo et fichiers supprimés"}
+@router.delete("/video/files")
+def delete_video_files(body: DeleteFilesRequest):
+    # Appelle la fonction dans r2.py qui supprime les fichiers HLS sur R2
+    delete_encoded_videos(
+        url_720p  = body.url_720p,
+        url_1080p = body.url_1080p
+    )
+    return {"message": "Fichiers supprimés"}

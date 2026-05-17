@@ -6,7 +6,6 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ✅ FOND BLANC */
         body {
             font-family: sans-serif;
             background: #f0f2f5;
@@ -17,7 +16,6 @@
             min-height: 100vh;
         }
 
-        /* ✅ CONTAINER BLANC */
         .container {
             background: white;
             padding: 40px;
@@ -28,13 +26,7 @@
         }
 
         .steps { display: flex; gap: 8px; margin-bottom: 30px; }
-
-        .step {
-            flex: 1;
-            height: 4px;
-            border-radius: 2px;
-            background: #e9ecef;
-        }
+        .step { flex: 1; height: 4px; border-radius: 2px; background: #e9ecef; }
         .step.active { background: #5c4fcf; }
 
         h2 { margin-bottom: 24px; font-size: 20px; color: #1a1a1a; }
@@ -49,10 +41,7 @@
             transition: border-color 0.2s;
             background: #fafafa;
         }
-        .drop-zone.dragover {
-            border-color: #5c4fcf;
-            background: #f5f3ff;
-        }
+        .drop-zone.dragover { border-color: #5c4fcf; background: #f5f3ff; }
         .drop-zone input { display: none; }
         .drop-zone.has-file { border-color: #5c4fcf; }
 
@@ -67,105 +56,50 @@
             cursor: pointer;
             font-weight: 500;
         }
-        .btn-upload:disabled {
-            background: #e9ecef;
-            color: #aaa;
-            cursor: not-allowed;
-        }
+        .btn-upload:disabled { background: #e9ecef; color: #aaa; cursor: not-allowed; }
 
-        /* ✅ Progress bar light */
-        .progress-wrap {
-            display: none;
-            margin-bottom: 20px;
-        }
+        .progress-wrap { display: none; margin-bottom: 20px; }
         .progress-bar-bg {
-            background: #e9ecef;
-            border-radius: 10px;
-            height: 12px;
-            overflow: hidden;
-            margin-bottom: 8px;
+            background: #e9ecef; border-radius: 10px;
+            height: 12px; overflow: hidden; margin-bottom: 8px;
         }
         .progress-bar-fill {
-            height: 100%;
-            background: #5c4fcf;
-            border-radius: 10px;
-            width: 0%;
+            height: 100%; background: #5c4fcf;
+            border-radius: 10px; width: 0%;
             transition: width 0.3s;
         }
         .progress-text {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #666;
+            display: flex; justify-content: space-between;
+            font-size: 13px; color: #666;
+        }
+        .progress-label {
+            font-size: 12px; color: #888;
+            margin-bottom: 4px; margin-top: 10px;
         }
 
-        /* ✅ Success light */
+        /* ── Success box ── */
         .success-box {
-            display: none;
-            background: #d4edda;
-            border: 1px solid #a3cfbb;
-            border-radius: 10px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
+            display: none; background: #d4edda;
+            border: 1px solid #a3cfbb; border-radius: 10px;
+            padding: 20px; text-align: center; margin-bottom: 20px;
         }
         .success-box h3 { color: #155724; margin-bottom: 8px; }
         .success-box p { color: #555; font-size: 13px; }
 
-        /* ✅ Status light */
-        .status-box {
-            display: none;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 20px;
-            text-align: center;
+        .btn-home {
+            display: none; width: 100%; padding: 14px;
+            background: #5c4fcf; color: white; border: none;
+            border-radius: 8px; font-size: 16px; cursor: pointer;
+            text-decoration: none; text-align: center; font-weight: 500;
+            margin-bottom: 12px;
         }
-        .status-label {
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .status-badge.PENDING   { background: #fff3cd; color: #856404; }
-        .status-badge.ENCODING  { background: #cfe2ff; color: #084298; }
-        .status-badge.UPLOADING { background: #d1ecf1; color: #0c5460; }
-        .status-badge.DONE      { background: #d4edda; color: #155724; }
-        .status-badge.ERROR     { background: #f8d7da; color: #721c24; }
-
-        .btn-watch {
-            display: none;
-            width: 100%;
-            padding: 14px;
-            background: #16a34a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            font-weight: 500;
-        }
+        .btn-home:hover { background: #4a3db0; }
 
         .back {
-            color: #aaa;
-            text-decoration: none;
-            font-size: 13px;
-            display: block;
-            text-align: center;
-            margin-top: 16px;
+            color: #aaa; text-decoration: none; font-size: 13px;
+            display: block; text-align: center; margin-top: 16px;
         }
         .back:hover { color: #5c4fcf; }
-
     </style>
 </head>
 <body>
@@ -198,51 +132,51 @@
         </div>
     </div>
 
+    <!-- Barre de progression upload vers R2 -->
     <div class="progress-wrap" id="progress-wrap">
+        <div class="progress-label">⬆️ Upload vers R2 en cours...</div>
         <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="progress-fill"></div>
         </div>
         <div class="progress-text">
-            <span>Upload en cours...</span>
+            <span id="progress-status">Préparation...</span>
             <span id="progress-pct">0%</span>
         </div>
     </div>
 
+    <!-- Message succès -->
     <div class="success-box" id="success-box">
         <h3>✅ Upload terminé !</h3>
-        <p>Votre vidéo est en cours de conversion. Cela peut prendre quelques minutes.</p>
-    </div>
-
-    <div class="status-box" id="status-box">
-        <div class="status-label">Statut de la conversion</div>
-        <span class="status-badge PENDING" id="status-badge">PENDING</span>
+        <p>Votre vidéo est en cours de conversion.<br>
+        Actualisez la page d'accueil pour voir le statut.</p>
     </div>
 
     <button class="btn-upload" id="btn-upload" disabled onclick="startUpload()">
         Uploader la vidéo
     </button>
 
-    <a class="btn-watch" id="btn-watch" href="#">▶ Regarder la vidéo</a>
+    <!-- Bouton retour à la liste — apparaît après upload -->
+    <a class="btn-home" id="btn-home" href="/">
+        ← Retour à la liste des vidéos
+    </a>
 
     <a href="/" class="back">← Retour à la liste</a>
 </div>
+
 <script>
     let selectedFile = null
-    let courseId     = null
 
     // ── Sélection fichier ──
     function fileSelected(input) {
-        if (input.files && input.files[0]) {
-            setFile(input.files[0])
-        }
+        if (input.files && input.files[0]) setFile(input.files[0])
     }
 
     function setFile(file) {
         selectedFile = file
         document.getElementById("drop-placeholder").style.display = "none"
-        document.getElementById("file-info").style.display = "block"
-        document.getElementById("file-name").textContent = file.name
-        document.getElementById("file-size").textContent =
+        document.getElementById("file-info").style.display        = "block"
+        document.getElementById("file-name").textContent          = file.name
+        document.getElementById("file-size").textContent          =
             (file.size / 1024 / 1024).toFixed(2) + " MB"
         document.getElementById("drop-zone").classList.add("has-file")
         document.getElementById("btn-upload").disabled = false
@@ -263,89 +197,99 @@
         if (file && file.type.startsWith("video/")) setFile(file)
     }
 
-    // ── Upload avec progression ──
-    function startUpload() {
+    // ── Upload direct vers R2 via Presigned URL ──
+    async function startUpload() {
         if (!selectedFile) return
 
-        const formData = new FormData()
-        formData.append("video", selectedFile)
-        formData.append("titre", "{{ titre }}")
-        formData.append("thumbnail_url", "{{ thumbnail_url or '' }}")
-
-        document.getElementById("btn-upload").disabled = true
+        document.getElementById("btn-upload").disabled           = true
         document.getElementById("drop-zone").style.pointerEvents = "none"
-        document.getElementById("progress-wrap").style.display = "block"
+        document.getElementById("progress-wrap").style.display   = "block"
 
-        const xhr = new XMLHttpRequest()
-
-        // ── Mise à jour de la barre de progression ──
-        xhr.upload.addEventListener("progress", e => {
-            if (e.lengthComputable) {
-                const pct = Math.round((e.loaded / e.total) * 100)
-                document.getElementById("progress-fill").style.width = pct + "%"
-                document.getElementById("progress-pct").textContent  = pct + "%"
-            }
-        })
-
-        // ── Upload terminé ──
-        xhr.addEventListener("load", () => {
-            if (xhr.status === 200) {
-                const data = JSON.parse(xhr.responseText)
-                courseId   = data.course_id
-
-                document.getElementById("progress-wrap").style.display = "none"
-                document.getElementById("success-box").style.display   = "block"
-                document.getElementById("status-box").style.display    = "block"
-
-                // Poll statut toutes les 4s
-                pollStatus(courseId)
-            }
-        })
-
-        xhr.open("POST", "/api/upload/video")
-        xhr.send(formData)
-    }
-
-    // ── Poll statut — s'arrête dès que DONE ou ERROR ──
-function pollStatus(id) {
-    async function checkStatus() {
         try {
-            const res  = await fetch("/status/" + id)
-            if (!res.ok) {
-                setTimeout(checkStatus, 10000)
-                return
-            }
+            // Étape 1 : Demander la presigned URL à Flask
+            updateProgress(5, "Obtention de l'URL d'upload...")
 
-            const data  = await res.json()
-            const badge = document.getElementById("status-badge")
+            const presignedRes = await fetch("/api/presigned-url", {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({
+                    filename:     selectedFile.name,
+                    content_type: selectedFile.type || "video/mp4"
+                })
+            })
 
-            badge.textContent = data.status
-            badge.className   = "status-badge " + data.status
+            if (!presignedRes.ok) throw new Error("Impossible d'obtenir la presigned URL")
 
-            if (data.status === "DONE") {
-                // ✅ Terminé — affiche le bouton regarder
-                const btnWatch = document.getElementById("btn-watch")
-                btnWatch.href         = "/watch/" + id
-                btnWatch.style.display = "block"
-                return  // ✅ stop — plus de vérification
-            }
+            const { presigned_url, r2_key } = await presignedRes.json()
 
-            if (data.status === "ERROR") {
-                return  // ✅ stop
-            }
+            // Étape 2 : Upload DIRECT vers R2
+            updateProgress(10, "Upload vers R2 en cours...")
+            await uploadToR2(presigned_url, selectedFile)
 
-            // ✅ Pas encore terminé — vérifie dans 10s
-            setTimeout(checkStatus, 10000)
+            // Étape 3 : Confirmer à Flask → Flask publie dans Redis
+            updateProgress(100, "Upload terminé !")
 
-        } catch (e) {
-            // ✅ Erreur réseau — réessaie dans 10s
-            setTimeout(checkStatus, 10000)
+            const confirmRes = await fetch("/api/upload/confirm", {
+                method:  "POST",
+                headers: { "Content-Type": "application/json" },
+                body:    JSON.stringify({
+                    titre:         "{{ titre }}",
+                    thumbnail_url: "{{ thumbnail_url or '' }}",
+                    r2_key:        r2_key
+                })
+            })
+
+            if (!confirmRes.ok) throw new Error("Erreur confirmation upload")
+
+            // ── Upload terminé ──
+            // On cache la barre de progression et on affiche le succès
+            // L'utilisateur doit actualiser la page d'accueil pour voir le statut
+            document.getElementById("progress-wrap").style.display = "none"
+            document.getElementById("success-box").style.display   = "block"
+            document.getElementById("btn-upload").style.display    = "none"
+            document.getElementById("btn-home").style.display      = "block"
+
+        } catch (err) {
+            document.getElementById("progress-wrap").style.display = "none"
+            alert("❌ Erreur lors de l'upload : " + err.message)
+            document.getElementById("btn-upload").disabled           = false
+            document.getElementById("drop-zone").style.pointerEvents = "auto"
         }
     }
 
-    // ✅ Première vérification après 10s
-    setTimeout(checkStatus, 10000)
+    // ── Upload vers R2 avec progression ──
+    function uploadToR2(presigned_url, file) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest()
 
+            xhr.upload.addEventListener("progress", e => {
+                if (e.lengthComputable) {
+                    const pct = 10 + Math.round((e.loaded / e.total) * 85)
+                    updateProgress(pct, "Upload vers R2...")
+                }
+            })
+
+            xhr.addEventListener("load", () => {
+                if (xhr.status === 200 || xhr.status === 204) {
+                    resolve()
+                } else {
+                    reject(new Error(`R2 upload failed: ${xhr.status}`))
+                }
+            })
+
+            xhr.addEventListener("error", () => reject(new Error("Erreur réseau upload R2")))
+
+            xhr.open("PUT", presigned_url)
+            xhr.setRequestHeader("Content-Type", file.type || "video/mp4")
+            xhr.send(file)
+        })
+    }
+
+    // ── Helper progression ──
+    function updateProgress(pct, label) {
+        document.getElementById("progress-fill").style.width   = pct + "%"
+        document.getElementById("progress-pct").textContent    = pct + "%"
+        document.getElementById("progress-status").textContent = label
     }
 </script>
 

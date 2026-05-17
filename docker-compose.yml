@@ -26,6 +26,11 @@ services:
       - ./uploads:/app/uploads
     env_file:
       - .env
+    # ─────────────────────────────────────────────────────────────────────────
+    # NOUVEAU — variables Upstash Redis pour FastAPI
+    # ─────────────────────────────────────────────────────────────────────────
+    environment:
+      - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL}
     depends_on:
       - mysql
 
@@ -41,8 +46,12 @@ services:
       - ./flask_app:/app
     env_file:
       - .env
+    # ─────────────────────────────────────────────────────────────────────────
+    #  — variables Upstash Redis pour Flask
+    # ─────────────────────────────────────────────────────────────────────────
     environment:
       - FASTAPI_URL=http://api:8000/api/v1
+      - UPSTASH_REDIS_URL=${UPSTASH_REDIS_URL}
     depends_on:
       - mysql
       - api

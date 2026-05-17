@@ -3,3 +3,5 @@ flask-sqlalchemy
 pymysql
 requests
 python-dotenv
+redis
+cryptography

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,9 +6,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from database.db import engine, Base
 from routes.video import router as video_router
 
+
+from services.background import listen_redis
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+
+    # ─────────────────────────────────────────────────────────────────────
+    #  — Lance listen_redis() en arrière-plan au démarrage
+    # ─────────────────────────────────────────────────────────────────────
+    asyncio.create_task(listen_redis())
+
     yield
 
 app = FastAPI(
